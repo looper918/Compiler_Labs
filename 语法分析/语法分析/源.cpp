@@ -6,8 +6,11 @@
 
 using namespace std;
 
-int LINES=1;
+int LINES=1;  
 bool If_Error = false;
+string File_Opened = "./../../.txt";
+string File_Output = "./../../.dyd";
+string Error_File_Name = "./../../.err";
 
 //判断是否为小写字母
 bool If_Character(char chara)
@@ -40,13 +43,24 @@ bool If_Character_Equal(char str1[], const char str2[],int num=0)
 	return true;
 }
 
+//判断字符是否合法
+bool Is_Invalied(char charc)
+{
+	if ((charc >= 'a'&&charc <= 'z') || (charc >= '0'&&charc <= 62))
+		return false;
+	else if (charc == '\n' || charc == '(' || charc == ')' || charc == '*')
+		return false;
+	else
+		return true;
+
+}
+
 //从文件中读取程序
 string Get_program()
 {
-	string File_Name = "./../../test_error.txt";
 	string text, temp;
 	ifstream File_out;
-	File_out.open(File_Name);
+	File_out.open(File_Opened);
 	while (!File_out.eof())
 	{
 		//File_out >> temp;
@@ -68,8 +82,7 @@ void File_Store(string temp, string code,int num = 1)
 	}
 	temp.resize(num);
 	ofstream File_out;
-	string File_Name = "./../../test.dyd";
-	File_out.open(File_Name, ios_base::out | ios_base::app);//以追加写模式打开文档
+	File_out.open(File_Output, ios_base::out | ios_base::app);//以追加写模式打开文档
 	while (temp.size() < 16)
 		temp = " " + temp;
 	cout << temp << " " << code << endl;
@@ -78,9 +91,10 @@ void File_Store(string temp, string code,int num = 1)
 	If_Error = false;
 }
 
+//出错处理
 void Error_Handling(int Error_Code)
 {
-	string Error_File_Name = "./../../test.err";
+	
 	ofstream Error_File;
 	Error_File.open(Error_File_Name, ios_base::out | ios_base::app);
 	switch (Error_Code)
@@ -91,6 +105,7 @@ void Error_Handling(int Error_Code)
 	}
 	Error_File.close();
 }
+
 //词法分析
 void Analysis(string text)
 {
@@ -111,7 +126,7 @@ void Analysis(string text)
 			while (If_Character(*next_pointer) || If_Number(*next_pointer))
 			{
 				Buffer[i++] = *now_pointer;
-				if (*now_pointer >= 'A'&&*now_pointer <= 'Z')
+				if (Is_Invalied(*now_pointer))
 				{
 					If_Error = true;
 					Error_Handling(0);
@@ -142,7 +157,11 @@ void Analysis(string text)
 			while (If_Number(*next_pointer)) //3->3
 			{
 				Buffer[i++] = *now_pointer;
-				if (*now_pointer >= 'A'&&*now_pointer <= 'Z') Error_Handling(0);
+				if (Is_Invalied(*now_pointer))
+				{
+					Error_Handling(0);
+					If_Error = true;
+				}
 				now_pointer++;
 				next_pointer++;
 			}
@@ -151,7 +170,7 @@ void Analysis(string text)
 			while (i-- != 0)
 				Buffer[i] = NULL;
 			i = 0;
-		
+			If_Error = false;
 		}
 		else if (*now_pointer == '=')
 			File_Store("=", "12");
@@ -220,6 +239,8 @@ void Analysis(string text)
 				File_Store("EOLN", "24", 4);
 				LINES++;
 			}
+			else 
+				Error_Handling(0);
 		}
 		now_pointer++;
 		next_pointer++;
@@ -230,11 +251,12 @@ void Analysis(string text)
 
 int main(void)
 {
-	/*
-	string text = Get_program();
-	cout << text<<endl;
-	cout<<text.size();
-	*/
+	string temp;
+	cout << "Input File name:" << endl;
+	cin >> temp;
+	File_Opened.insert(8, temp);
+	File_Output.insert(8, temp);
+	Error_File_Name.insert(8, temp);
 	Analysis(Get_program());
 	system("pause");
 	return 0;
