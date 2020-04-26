@@ -51,6 +51,7 @@ void File_Store(string temp,string code,int num = 1)
 	File_out.open(File_Name, ios_base::out | ios_base::app);//以追加写模式打开文档
 	while(temp.size() < 16)
 		temp = " " + temp;
+	cout << temp << " " << code << endl;
 	File_out << temp << " " << code<< endl;
 	File_out.close();
 
@@ -69,6 +70,7 @@ void Analysis(string text)
 		{
 			now_pointer++;
 			next_pointer++;
+			continue;
 		}
 		else if (If_Character(*now_pointer))//字母 0->1
 		{
@@ -79,15 +81,20 @@ void Analysis(string text)
 			next_pointer++;
 		  }
 		  temp[i++] = *now_pointer;
-		  if (strcmp(temp,"begin")) File_Store(temp,"01",i);
-		  else if (strcmp(temp, "end")) File_Store(temp, "02", i + 1);
-		  else if (strcmp(temp, "integer")) File_Store(temp, "03", i + 1);
-		  else if (strcmp(temp, "if")) File_Store(temp, "04", i + 1);
-		  else if (strcmp(temp, "then")) File_Store(temp, "05", i + 1);
-		  else if (strcmp(temp, "else")) File_Store(temp, "06", i + 1);
-		  else if (strcmp(temp, "function")) File_Store(temp, "07", i + 1);
-		  else if (strcmp(temp, "read")) File_Store(temp, "08", i + 1);
-		  else if (strcmp(temp, "write")) File_Store(temp, "09", i + 1);
+		  if (strcmp(temp,"begin")==0) File_Store(temp,"01",i);
+		  else if (strcmp(temp, "end")==0) File_Store(temp, "02", i);
+		  else if (strcmp(temp, "integer")==0) File_Store(temp, "03", i);
+		  else if (strcmp(temp, "if")==0) File_Store(temp, "04", i);
+		  else if (strcmp(temp, "then")==0) File_Store(temp, "05", i);
+		  else if (strcmp(temp, "else")==0) File_Store(temp, "06", i);
+		  else if (strcmp(temp, "function")==0) File_Store(temp, "07", i);
+		  else if (strcmp(temp, "read")==0) File_Store(temp, "08", i);
+		  else if (strcmp(temp, "write")==0) File_Store(temp, "09", i);
+		  else File_Store(temp, "10",i);
+
+		  while (i-- != 0)
+			  temp[i] = ' ';
+		  i = 0;
 		}
 		else if (If_Number(*now_pointer))//数字 0->3
 		{
@@ -97,37 +104,35 @@ void Analysis(string text)
 				now_pointer++;
 				next_pointer++;
 			}
-			//TODO 3->4
+			temp[i++] = *now_pointer;
+			File_Store(temp, "11");
+			while (i-- != 0)
+				temp[i] = ' ';
+			i = 0;
 		}
 		else if (*now_pointer == '=')
-		{
 			File_Store("=", "12");
-		}
 		else if (*now_pointer == '-')
-		{
 			File_Store("-", "18");
-		}
 		else if (*now_pointer == '*')
-		{
 			File_Store("*", "19");
-		}
 		else if (*now_pointer == '(')
-		{
-			File_Store("（", "21");
-		}
+			File_Store("(", "21");
 		else if (*now_pointer == ')')
-		{
-			File_Store("）", "22");
-		}
+			File_Store(")", "22");
 		else if (*now_pointer == '<')//0->10
 		{
 			if (*next_pointer == '=') //10->11
 			{
 				File_Store("<=", "14",2);
+				now_pointer++;
+				next_pointer++;
 			}
 			else if (*next_pointer == '>') //10->12
 			{
 				File_Store("<>", "13",2);
+				now_pointer++;
+				next_pointer++;
 			}
 			else  //10->13
 			{
@@ -136,43 +141,43 @@ void Analysis(string text)
 		}
 		else if (*now_pointer == '>')
 		{
-			//TODO  print and store messsage
 			if (*next_pointer == '=') //14->15
 			{
-				File_Store(">=", "16",2);
+				File_Store(">=", "16", 2);
+				now_pointer++;
+				next_pointer++;
 			}
 			else  //14->16
-			{
 				File_Store(">", "17");
-			}
 		}
 		else if (*now_pointer == ':')
 		{
 			if (*next_pointer == '=') //匹配成功
 			{
-				File_Store(":=", "20");
+				File_Store(":=", "20",2);
+				now_pointer++;
+				next_pointer++;
 			}
 			else
 			{
 				//TODO 匹配错误
-			}
-				
+				cout << "Error" << endl;
+			}	
 		}
 		else if (*now_pointer == ';')
 		{
-			File_Store(";", "23");
+			File_Store(";","23");
 		}
 		else   //0->21
 		{
-		
 			while (i-- != 0)
 				temp[i] = ' ';
 			i = 0;
 			if(*now_pointer == '\n')
 				File_Store("EOLN", "24",4);
 		}
-		*now_pointer++;
-		*next_pointer++;
+		now_pointer++;
+		next_pointer++;
  	}
 	File_Store("EOF", "25",3);
 }
