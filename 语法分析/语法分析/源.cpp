@@ -6,10 +6,13 @@
 
 using namespace std;
 
+int LINES=1;
+bool If_Error = false;
+
 //判断是否为小写字母
 bool If_Character(char chara)
 {
-	if (chara >= 'a'&&chara <= 'z')
+	if ((chara >= 'a'&&chara <= 'z')|| (chara >= 'A'&&chara <= 'Z'))
 		return true;
 	else
 		return false;
@@ -24,6 +27,7 @@ bool If_Number(char chara)
 		return false;
 }
 
+//判断两字符串是否相等
 bool If_Character_Equal(char str1[], const char str2[],int num=0)
 {
 	while (num >= 0)
@@ -35,10 +39,11 @@ bool If_Character_Equal(char str1[], const char str2[],int num=0)
 	}
 	return true;
 }
+
 //从文件中读取程序
 string Get_program()
 {
-	string File_Name = "./../../test.txt";
+	string File_Name = "./../../test_error.txt";
 	string text, temp;
 	ifstream File_out;
 	File_out.open(File_Name);
@@ -54,8 +59,13 @@ string Get_program()
 }
 
 //输出二元式文件
-void File_Store(string temp, string code, int num = 1)
+void File_Store(string temp, string code,int num = 1)
 {
+	if (If_Error)
+	{
+		cout << "Error" << endl;
+		return;   //出错时不打印该行
+	}
 	temp.resize(num);
 	ofstream File_out;
 	string File_Name = "./../../test.dyd";
@@ -65,18 +75,31 @@ void File_Store(string temp, string code, int num = 1)
 	cout << temp << " " << code << endl;
 	File_out << temp << " " << code << endl;
 	File_out.close();
-
+	If_Error = false;
 }
 
+void Error_Handling(int Error_Code)
+{
+	string Error_File_Name = "./../../test.err";
+	ofstream Error_File;
+	Error_File.open(Error_File_Name, ios_base::out | ios_base::app);
+	switch (Error_Code)
+	{
+	case 0:Error_File << "LINE: " << LINES << "  Invalid Character" << endl; break; //非法字符
+	case 1:Error_File << "LINE: " << LINES << "  : does not match" << endl; break;   //：不匹配
+	case 2:Error_File << "LINE: " << LINES << "  identifier is too long" << endl; break;  //长度溢出
+	}
+	Error_File.close();
+}
 //词法分析
 void Analysis(string text)
 {
-	char temp[16];
+	char Buffer[20];
 	char *now_pointer = &text[0], *next_pointer = &text[1];
 	int i = 0;
 	while (*next_pointer != '\0')
 	{
-
+		
 		if (*now_pointer == ' ')//空格 0->0
 		{
 			now_pointer++;
@@ -87,39 +110,48 @@ void Analysis(string text)
 		{
 			while (If_Character(*next_pointer) || If_Number(*next_pointer))
 			{
-				temp[i++] = *now_pointer;
+				Buffer[i++] = *now_pointer;
+				if (*now_pointer >= 'A'&&*now_pointer <= 'Z')
+				{
+					If_Error = true;
+					Error_Handling(0);
+				}
 				now_pointer++;
 				next_pointer++;
 			}
-			temp[i++] = *now_pointer;
+			Buffer[i++] = *now_pointer;
+			if (i > 16) Error_Handling(2);
 			
-			if (If_Character_Equal(temp,"begin",4)) File_Store(temp,"01",i);
-			else if (If_Character_Equal(temp, "end", 2)) File_Store(temp, "02", i);
-			else if (If_Character_Equal(temp, "integer", 6)) File_Store(temp, "03", i);
-			else if (If_Character_Equal(temp, "if", 1)) File_Store(temp, "04", i);
-			else if (If_Character_Equal(temp, "then", 3)) File_Store(temp, "05", i);
-			else if (If_Character_Equal(temp, "else", 3)) File_Store(temp, "06", i);
-			else if (If_Character_Equal(temp, "function", 7)) File_Store(temp, "07", i);
-			else if (If_Character_Equal(temp, "read", 3)) File_Store(temp, "08", i);
-			else if (If_Character_Equal(temp, "write", 3)) File_Store(temp, "09", i);
-			else File_Store(temp, "10",i);
+			if (If_Character_Equal(Buffer,"begin",4)) File_Store(Buffer,"01",i);
+			else if (If_Character_Equal(Buffer, "end", 2)) File_Store(Buffer, "02", i);
+			else if (If_Character_Equal(Buffer, "integer", 6)) File_Store(Buffer, "03", i);
+			else if (If_Character_Equal(Buffer, "if", 1)) File_Store(Buffer, "04", i);
+			else if (If_Character_Equal(Buffer, "then", 3)) File_Store(Buffer, "05", i);
+			else if (If_Character_Equal(Buffer, "else", 3)) File_Store(Buffer, "06", i);
+			else if (If_Character_Equal(Buffer, "function", 7)) File_Store(Buffer, "07", i);
+			else if (If_Character_Equal(Buffer, "read", 3)) File_Store(Buffer, "08", i);
+			else if (If_Character_Equal(Buffer, "write", 3)) File_Store(Buffer, "09", i);
+			else File_Store(Buffer, "10",i);
 			while (i-- != 0)
-				temp[i] = NULL;
+				Buffer[i] = NULL;
 			i = 0;
+			If_Error = false;
 		}
 		else if (If_Number(*now_pointer))//数字 0->3
 		{
 			while (If_Number(*next_pointer)) //3->3
 			{
-				temp[i++] = *now_pointer;
+				Buffer[i++] = *now_pointer;
+				if (*now_pointer >= 'A'&&*now_pointer <= 'Z') Error_Handling(0);
 				now_pointer++;
 				next_pointer++;
 			}
-			temp[i++] = *now_pointer;
-			File_Store(temp, "11");
+			Buffer[i++] = *now_pointer;
+			File_Store(Buffer, "11");
 			while (i-- != 0)
-				temp[i] = NULL;
+				Buffer[i] = NULL;
 			i = 0;
+		
 		}
 		else if (*now_pointer == '=')
 			File_Store("=", "12");
@@ -171,8 +203,7 @@ void Analysis(string text)
 			}
 			else
 			{
-				//TODO 匹配错误
-				cout << "Error" << endl;
+				Error_Handling(1);
 			}
 		}
 		else if (*now_pointer == ';')
@@ -182,10 +213,13 @@ void Analysis(string text)
 		else   //0->21
 		{
 			while (i-- != 0)
-				temp[i] = NULL;
+				Buffer[i] = NULL;
 			i = 0;
 			if (*now_pointer == '\n')
+			{
 				File_Store("EOLN", "24", 4);
+				LINES++;
+			}
 		}
 		now_pointer++;
 		next_pointer++;
