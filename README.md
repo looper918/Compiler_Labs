@@ -1,6 +1,6 @@
-#***编译原理实验相关项目及文件***
+# 编译原理实验相关项目及文件
 
-##函数列表##
+* ##  函数列表
 
 函数名|说明
 |:---:|:---:|
@@ -13,7 +13,7 @@ File_Store(string,code,int)|输出二元式文件
 Error_Handling(int)|出错处理
 Analysis(string)|词法分析
 
-##全局变量名##
+* ##  全局变量名
 
 变量|说明
 |:--:|:--:|
@@ -21,3 +21,4 @@ Analysis(string)|词法分析
  File_Opened|待打开的文件名
  File_Output|词法分析输出文件名
  Error_File_Name|词法错误输出文件名
+
