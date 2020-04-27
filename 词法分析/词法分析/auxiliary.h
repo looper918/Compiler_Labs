@@ -1,11 +1,13 @@
+#ifndef AUXILIARY_H
+#define AUXILIARY_H
 #include<string>
 using namespace std;
 
 int LINES = 1;
 bool If_Error = false;
-string File_Opened = "./../../.txt";
-string File_Output = "./../../.dyd";
-string Error_File_Name = "./../../.err"; 
+string File_Opened = "./.txt";
+string File_Output = "./.dyd";
+string Error_File_Name = "./.err";
 
 bool If_Character(char); //判断是否为小写字母
 bool If_Number(char);  //判断是否为数字
@@ -16,4 +18,6 @@ void Error_Handling(int);//出错处理
 void Analysis(string); //词法分析
 string Get_program(); //从文件中读取程序
 
+
+#endif 
 

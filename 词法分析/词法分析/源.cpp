@@ -11,9 +11,9 @@ int main(void)
 	string temp;
 	cout << "Input File name:" << endl;
 	cin >> temp;
-	File_Opened.insert(8, temp);
-	File_Output.insert(8, temp);
-	Error_File_Name.insert(8, temp);
+	File_Opened.insert(2, temp);
+	File_Output.insert(2, temp);
+	Error_File_Name.insert(2, temp);
 	Analysis(Get_program());
 	system("pause");
 	return 0;
