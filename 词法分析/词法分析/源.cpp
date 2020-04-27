@@ -2,26 +2,31 @@
 #include<string>
 #include<fstream>
 #include<cstdlib>
-#include<array>
+#include"auxiliary.h"
 
 using namespace std;
 
-int LINES=1;  
-bool If_Error = false;
-string File_Opened = "./../../.txt";
-string File_Output = "./../../.dyd";
-string Error_File_Name = "./../../.err";
+int main(void)
+{
+	string temp;
+	cout << "Input File name:" << endl;
+	cin >> temp;
+	File_Opened.insert(8, temp);
+	File_Output.insert(8, temp);
+	Error_File_Name.insert(8, temp);
+	Analysis(Get_program());
+	system("pause");
+	return 0;
+}
 
-//判断是否为小写字母
 bool If_Character(char chara)
 {
-	if ((chara >= 'a'&&chara <= 'z')|| (chara >= 'A'&&chara <= 'Z'))
+	if ((chara >= 'a'&&chara <= 'z') || (chara >= 'A'&&chara <= 'Z'))
 		return true;
 	else
 		return false;
 }
 
-//判断是否为数字
 bool If_Number(char chara)
 {
 	if (chara >= '0'&&chara <= '9')
@@ -30,8 +35,7 @@ bool If_Number(char chara)
 		return false;
 }
 
-//判断两字符串是否相等
-bool If_Character_Equal(char str1[], const char str2[],int num=0)
+bool If_Character_Equal(char str1[], const char str2[], int num = 0)
 {
 	while (num >= 0)
 	{
@@ -43,7 +47,6 @@ bool If_Character_Equal(char str1[], const char str2[],int num=0)
 	return true;
 }
 
-//判断字符是否合法
 bool Is_Invalied(char charc)
 {
 	if ((charc >= 'a'&&charc <= 'z') || (charc >= '0'&&charc <= 62))
@@ -52,15 +55,20 @@ bool Is_Invalied(char charc)
 		return false;
 	else
 		return true;
-
 }
 
-//从文件中读取程序
 string Get_program()
 {
 	string text, temp;
 	ifstream File_out;
+
 	File_out.open(File_Opened);
+	if (!File_out)
+	{
+		cout << "File Open Failed" << endl;
+		exit(0);
+	}
+	
 	while (!File_out.eof())
 	{
 		//File_out >> temp;
@@ -72,8 +80,7 @@ string Get_program()
 	return text;
 }
 
-//输出二元式文件
-void File_Store(string temp, string code,int num = 1)
+void File_Store(string temp, string code, int num = 1)
 {
 	if (If_Error)
 	{
@@ -91,10 +98,9 @@ void File_Store(string temp, string code,int num = 1)
 	If_Error = false;
 }
 
-//出错处理
 void Error_Handling(int Error_Code)
 {
-	
+
 	ofstream Error_File;
 	Error_File.open(Error_File_Name, ios_base::out | ios_base::app);
 	switch (Error_Code)
@@ -106,7 +112,6 @@ void Error_Handling(int Error_Code)
 	Error_File.close();
 }
 
-//词法分析
 void Analysis(string text)
 {
 	char Buffer[20];
@@ -114,7 +119,7 @@ void Analysis(string text)
 	int i = 0;
 	while (*next_pointer != '\0')
 	{
-		
+
 		if (*now_pointer == ' ')//空格 0->0
 		{
 			now_pointer++;
@@ -136,8 +141,8 @@ void Analysis(string text)
 			}
 			Buffer[i++] = *now_pointer;
 			if (i > 16) Error_Handling(2);
-			
-			if (If_Character_Equal(Buffer,"begin",4)) File_Store(Buffer,"01",i);
+
+			if (If_Character_Equal(Buffer, "begin", 4)) File_Store(Buffer, "01", i);
 			else if (If_Character_Equal(Buffer, "end", 2)) File_Store(Buffer, "02", i);
 			else if (If_Character_Equal(Buffer, "integer", 6)) File_Store(Buffer, "03", i);
 			else if (If_Character_Equal(Buffer, "if", 1)) File_Store(Buffer, "04", i);
@@ -146,7 +151,7 @@ void Analysis(string text)
 			else if (If_Character_Equal(Buffer, "function", 7)) File_Store(Buffer, "07", i);
 			else if (If_Character_Equal(Buffer, "read", 3)) File_Store(Buffer, "08", i);
 			else if (If_Character_Equal(Buffer, "write", 3)) File_Store(Buffer, "09", i);
-			else File_Store(Buffer, "10",i);
+			else File_Store(Buffer, "10", i);
 			while (i-- != 0)
 				Buffer[i] = NULL;
 			i = 0;
@@ -239,25 +244,11 @@ void Analysis(string text)
 				File_Store("EOLN", "24", 4);
 				LINES++;
 			}
-			else 
+			else
 				Error_Handling(0);
 		}
 		now_pointer++;
 		next_pointer++;
 	}
 	File_Store("EOF", "25", 3);
-}
-
-
-int main(void)
-{
-	string temp;
-	cout << "Input File name:" << endl;
-	cin >> temp;
-	File_Opened.insert(8, temp);
-	File_Output.insert(8, temp);
-	Error_File_Name.insert(8, temp);
-	Analysis(Get_program());
-	system("pause");
-	return 0;
 }
