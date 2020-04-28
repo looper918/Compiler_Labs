@@ -105,9 +105,9 @@ void Error_Handling(int Error_Code)
 	Error_File.open(Error_File_Name, ios_base::out | ios_base::app);
 	switch (Error_Code)
 	{
-	case 0:Error_File << "LINE: " << LINES << "  Invalid Character" << endl; break; //非法字符
-	case 1:Error_File << "LINE: " << LINES << "  : does not match" << endl; break;   //：不匹配
-	case 2:Error_File << "LINE: " << LINES << "  identifier is too long" << endl; break;  //长度溢出
+	case 0:Error_File << "***LINE: " << LINES << "  Invalid Character" << endl; break; //非法字符
+	case 1:Error_File << "***LINE: " << LINES << "  : does not match" << endl; break;   //：不匹配
+	case 2:Error_File << "***LINE: " << LINES << "  identifier is too long" << endl; break;  //长度溢出
 	}
 	Error_File.close();
 }
