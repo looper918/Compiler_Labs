@@ -47,7 +47,7 @@ bool If_Character_Equal(char str1[], const char str2[], int num = 0)
 	return true;
 }
 
-bool Is_Invalied(char charc)
+bool Is_Invaild(char charc)
 {
 	if ((charc >= 'a'&&charc <= 'z') || (charc >= '0'&&charc <= 62))
 		return false;
@@ -84,7 +84,7 @@ void File_Store(string temp, string code, int num = 1)
 {
 	if (If_Error)
 	{
-		cout << "Error" << endl;
+		//cout << "Error" << endl;
 		return;   //出错时不打印该行
 	}
 	temp.resize(num);
@@ -131,7 +131,7 @@ void Analysis(string text)
 			while (If_Character(*next_pointer) || If_Number(*next_pointer))
 			{
 				Buffer[i++] = *now_pointer;
-				if (Is_Invalied(*now_pointer))
+				if (Is_Invaild(*now_pointer))
 				{
 					If_Error = true;
 					Error_Handling(0);
@@ -155,14 +155,14 @@ void Analysis(string text)
 			while (i-- != 0)
 				Buffer[i] = NULL;
 			i = 0;
-			If_Error = false;
+			//If_Error = false;
 		}
 		else if (If_Number(*now_pointer))//数字 0->3
 		{
 			while (If_Number(*next_pointer)) //3->3
 			{
 				Buffer[i++] = *now_pointer;
-				if (Is_Invalied(*now_pointer))
+				if (Is_Invaild(*now_pointer))
 				{
 					Error_Handling(0);
 					If_Error = true;
@@ -175,7 +175,7 @@ void Analysis(string text)
 			while (i-- != 0)
 				Buffer[i] = NULL;
 			i = 0;
-			If_Error = false;
+			//If_Error = false;
 		}
 		else if (*now_pointer == '=')
 			File_Store("=", "12");

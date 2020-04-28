@@ -7,7 +7,7 @@
 If_Character(char)|判断是否为字母
 If_Number(char)|判断是否为数字
 If_Character_Equal(char,const char,int)|判断两字符串是否相等
-Is_Invalied(char)|判断字符是否合法
+Is_Invaild(char)|判断字符是否合法
 Get_program()|从文件中读取数据
 File_Store(string,code,int)|输出二元式文件
 Error_Handling(int)|出错处理
