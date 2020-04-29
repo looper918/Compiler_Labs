@@ -1,0 +1,13 @@
+begin
+     /
+     integer k;
+     Fnteger function f(n);
+        begin
+             int*eger ninjfieondcjejogv;
+             if n<=0 then f:=1
+             else f:n*f(n-1)
+        end;
+      read(m);
+      k:=f(m);
+      write(k)
+end
