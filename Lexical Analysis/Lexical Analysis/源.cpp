@@ -81,6 +81,7 @@ void File_Store(string temp, string code, int num = 1)
 {
 	if (If_Error)
 	{
+		If_Error = false;
 		//cout << "Error" << endl;
 		return;   //出错时不打印该行
 	}
@@ -151,7 +152,6 @@ void Analysis(string text)
 			while (i-- != 0)
 				Buffer[i] = NULL;
 			i = 0;
-			If_Error = false;
 		}
 		else if (If_Number(*now_pointer))//数字 0->3
 		{
@@ -171,7 +171,6 @@ void Analysis(string text)
 			while (i-- != 0)
 				Buffer[i] = NULL;
 			i = 0;
-			If_Error = false;
 		}
 		else if (*now_pointer == '=')
 			File_Store("=", "12");
