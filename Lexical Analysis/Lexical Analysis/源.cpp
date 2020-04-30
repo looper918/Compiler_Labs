@@ -11,12 +11,12 @@ int main(int argc,char *argv[])
 	File_Opened.insert(2, argv[1]);
 	File_Output.insert(2, argv[1]);
 	Error_File_Name.insert(2, argv[1]);
-	Analysis(Get_program());
+	Analysis(Getprogram());
 	system("pause");
 	return 0;
 }
 
-bool If_Character(char chara)
+bool IfCharacter(char chara)
 {
 	if ((chara >= 'a'&&chara <= 'z') || (chara >= 'A'&&chara <= 'Z'))
 		return true;
@@ -24,7 +24,7 @@ bool If_Character(char chara)
 		return false;
 }
 
-bool If_Number(char chara)
+bool IfNumber(char chara)
 {
 	if (chara >= '0'&&chara <= '9')
 		return true;
@@ -32,7 +32,7 @@ bool If_Number(char chara)
 		return false;
 }
 
-bool If_Character_Equal(char str1[], const char str2[], int num = 0)
+bool IfCharacterEqual(char str1[], const char str2[], int num = 0)
 {
 	while (num >= 0)
 	{
@@ -44,7 +44,7 @@ bool If_Character_Equal(char str1[], const char str2[], int num = 0)
 	return true;
 }
 
-bool Is_Invaild(char charc)
+bool IsInvalid(char charc)
 {
 	if ((charc >= 'a'&&charc <= 'z') || (charc >= '0'&&charc <= 62))
 		return false;
@@ -54,7 +54,7 @@ bool Is_Invaild(char charc)
 		return true;
 }
 
-string Get_program()
+string Getprogram()
 {
 	string text, temp;
 	ifstream File_out;
@@ -77,17 +77,17 @@ string Get_program()
 	return text;
 }
 
-void File_Store(string temp, string code, int num = 1)
+void FileStore(string temp, string code, int num = 1)
 {
 	if (If_Error)
 	{
 		If_Error = false;
 		//cout << "Error" << endl;
-		return;   //³ö´íÊ±²»´òÓ¡¸ÃÐÐ
+		return;   //ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¡ï¿½ï¿½ï¿½ï¿½
 	}
 	temp.resize(num);
 	ofstream File_out;
-	File_out.open(File_Output, ios_base::out | ios_base::app);//ÒÔ×·¼ÓÐ´Ä£Ê½´ò¿ªÎÄµµ
+	File_out.open(File_Output, ios_base::out | ios_base::app);//ï¿½ï¿½×·ï¿½ï¿½Ð´Ä£Ê½ï¿½ï¿½ï¿½Äµï¿½
 	while (temp.size() < 16)
 		temp = " " + temp;
 	cout << temp << " " << code << endl;
@@ -95,16 +95,16 @@ void File_Store(string temp, string code, int num = 1)
 	File_out.close();
 }
 
-void Error_Handling(int Error_Code)
+void ErrorHandling(int Error_Code)
 {
 
 	ofstream Error_File;
 	Error_File.open(Error_File_Name, ios_base::out | ios_base::app);
 	switch (Error_Code)
 	{
-	case 0:Error_File << "***LINE: " << LINES << "  Invaild Character" << endl; break; //·Ç·¨×Ö·û
-	case 1:Error_File << "***LINE: " << LINES << "  : does not match" << endl; break;   //£º²»Æ¥Åä
-	case 2:Error_File << "***LINE: " << LINES << "  identifier is too long" << endl; break;  //³¤¶ÈÒç³ö
+	case 0:Error_File << "***LINE: " << LINES << "  Invalid Character" << endl; break; //ï¿½Ç·ï¿½ï¿½Ö·ï¿½
+	case 1:Error_File << "***LINE: " << LINES << "  : does not match" << endl; break;   //ï¿½ï¿½ï¿½ï¿½Æ¥ï¿½ï¿½
+	case 2:Error_File << "***LINE: " << LINES << "  identifier is too long" << endl; break;  //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	}
 	Error_File.close();
 }
@@ -117,117 +117,117 @@ void Analysis(string text)
 	while (*next_pointer != '\0')
 	{
 
-		if (*now_pointer == ' ')//¿Õ¸ñ 0->0
+		if (*now_pointer == ' ')//ï¿½Õ¸ï¿½ 0->0
 		{
 			now_pointer++;
 			next_pointer++;
 			continue;
 		}
-		else if (If_Character(*now_pointer))//×ÖÄ¸ 0->1
+		else if (IfCharacter(*now_pointer))//ï¿½ï¿½Ä¸ 0->1
 		{
-			while (If_Character(*next_pointer) || If_Number(*next_pointer))
+			while (IfCharacter(*next_pointer) || IfNumber(*next_pointer))
 			{
 				Buffer[i++] = *now_pointer;
-				if (Is_Invaild(*now_pointer))
+				if (IsInvalid(*now_pointer))
 				{
 					If_Error = true;
-					Error_Handling(0);
+					ErrorHandling(0);
 				}
 				now_pointer++;
 				next_pointer++;
 			}
 			Buffer[i++] = *now_pointer;
-			if (i > 16) Error_Handling(2);
+			if (i > 16) ErrorHandling(2);
 
-			if (If_Character_Equal(Buffer, "begin", 4)) File_Store(Buffer, "01", i);
-			else if (If_Character_Equal(Buffer, "end", 2)) File_Store(Buffer, "02", i);
-			else if (If_Character_Equal(Buffer, "integer", 6)) File_Store(Buffer, "03", i);
-			else if (If_Character_Equal(Buffer, "if", 1)) File_Store(Buffer, "04", i);
-			else if (If_Character_Equal(Buffer, "then", 3)) File_Store(Buffer, "05", i);
-			else if (If_Character_Equal(Buffer, "else", 3)) File_Store(Buffer, "06", i);
-			else if (If_Character_Equal(Buffer, "function", 7)) File_Store(Buffer, "07", i);
-			else if (If_Character_Equal(Buffer, "read", 3)) File_Store(Buffer, "08", i);
-			else if (If_Character_Equal(Buffer, "write", 4)) File_Store(Buffer, "09", i);
-			else File_Store(Buffer, "10", i);
+			if (IfCharacterEqual(Buffer, "begin", 4)) FileStore(Buffer, "01", i);
+			else if (IfCharacterEqual(Buffer, "end", 2)) FileStore(Buffer, "02", i);
+			else if (IfCharacterEqual(Buffer, "integer", 6)) FileStore(Buffer, "03", i);
+			else if (IfCharacterEqual(Buffer, "if", 1)) FileStore(Buffer, "04", i);
+			else if (IfCharacterEqual(Buffer, "then", 3)) FileStore(Buffer, "05", i);
+			else if (IfCharacterEqual(Buffer, "else", 3)) FileStore(Buffer, "06", i);
+			else if (IfCharacterEqual(Buffer, "function", 7)) FileStore(Buffer, "07", i);
+			else if (IfCharacterEqual(Buffer, "read", 3)) FileStore(Buffer, "08", i);
+			else if (IfCharacterEqual(Buffer, "write", 4)) FileStore(Buffer, "09", i);
+			else FileStore(Buffer, "10", i);
 			while (i-- != 0)
 				Buffer[i] = NULL;
 			i = 0;
 		}
-		else if (If_Number(*now_pointer))//Êý×Ö 0->3
+		else if (IfNumber(*now_pointer))//ï¿½ï¿½ï¿½ï¿½ 0->3
 		{
-			while (If_Number(*next_pointer)) //3->3
+			while (IfNumber(*next_pointer)) //3->3
 			{
 				Buffer[i++] = *now_pointer;
-				if (Is_Invaild(*now_pointer))
+				if (IsInvalid(*now_pointer))
 				{
-					Error_Handling(0);
+					ErrorHandling(0);
 					If_Error = true;
 				}
 				now_pointer++;
 				next_pointer++;
 			}
 			Buffer[i++] = *now_pointer;
-			File_Store(Buffer, "11");
+			FileStore(Buffer, "11");
 			while (i-- != 0)
 				Buffer[i] = NULL;
 			i = 0;
 		}
 		else if (*now_pointer == '=')
-			File_Store("=", "12");
+			FileStore("=", "12");
 		else if (*now_pointer == '-')
-			File_Store("-", "18");
+			FileStore("-", "18");
 		else if (*now_pointer == '*')
-			File_Store("*", "19");
+			FileStore("*", "19");
 		else if (*now_pointer == '(')
-			File_Store("(", "21");
+			FileStore("(", "21");
 		else if (*now_pointer == ')')
-			File_Store(")", "22");
+			FileStore(")", "22");
 		else if (*now_pointer == '<')//0->10
 		{
 			if (*next_pointer == '=') //10->11
 			{
-				File_Store("<=", "14", 2);
+				FileStore("<=", "14", 2);
 				now_pointer++;
 				next_pointer++;
 			}
 			else if (*next_pointer == '>') //10->12
 			{
-				File_Store("<>", "13", 2);
+				FileStore("<>", "13", 2);
 				now_pointer++;
 				next_pointer++;
 			}
 			else  //10->13
 			{
-				File_Store("<", "15");
+				FileStore("<", "15");
 			}
 		}
 		else if (*now_pointer == '>')
 		{
 			if (*next_pointer == '=') //14->15
 			{
-				File_Store(">=", "16", 2);
+				FileStore(">=", "16", 2);
 				now_pointer++;
 				next_pointer++;
 			}
 			else  //14->16
-				File_Store(">", "17");
+				FileStore(">", "17");
 		}
 		else if (*now_pointer == ':')
 		{
-			if (*next_pointer == '=') //Æ¥Åä³É¹¦
+			if (*next_pointer == '=') //Æ¥ï¿½ï¿½É¹ï¿½
 			{
-				File_Store(":=", "20", 2);
+				FileStore(":=", "20", 2);
 				now_pointer++;
 				next_pointer++;
 			}
 			else
 			{
-				Error_Handling(1);
+				ErrorHandling(1);
 			}
 		}
 		else if (*now_pointer == ';')
 		{
-			File_Store(";", "23");
+			FileStore(";", "23");
 		}
 		else   //0->21
 		{
@@ -236,14 +236,14 @@ void Analysis(string text)
 			i = 0;
 			if (*now_pointer == '\n')
 			{
-				File_Store("EOLN", "24", 4);
+				FileStore("EOLN", "24", 4);
 				LINES++;
 			}
 			else
-				Error_Handling(0);
+				ErrorHandling(0);
 		}
 		now_pointer++;
 		next_pointer++;
 	}
-	File_Store("EOF", "25", 3);
+	FileStore("EOF", "25", 3);
 }

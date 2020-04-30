@@ -40,3 +40,4 @@ void ReadFile(vector<Statements> &text)
 		text.push_back(new_statement);
 	}
 }
+
