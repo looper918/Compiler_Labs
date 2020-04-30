@@ -7,10 +7,10 @@
 #include"Parser.h"
 using namespace std;
 
-int main(void)
+int main(int argc, char*argv[])
 {
 	vector<Statements> text;
-	ReadFile(text);
+	ReadFile(text,argv[1]);
 	for (Statements i : text)
 	{
 		cout << i .statement<< endl;
@@ -20,10 +20,11 @@ int main(void)
 	return 0;
 }
 
-void ReadFile(vector<Statements> &text)
+void ReadFile(vector<Statements> &text,string FileName)
 {
 	ifstream File_Input;
-	string File_name = "./test.dyd";
+	string File_name = "./.dyd";
+	File_name.insert(2, FileName);
 	string temp;
 	File_Input.open(File_name);
 	if (!File_Input)

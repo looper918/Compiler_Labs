@@ -11,7 +11,7 @@ public:
 	Statements(string,int);
 	Statements();
 };
-void ReadFile(vector<Statements> &text); //读文件
+void ReadFile(vector<Statements> &text,string Filename); //读文件
 void Advancd();
 
 
