@@ -6,6 +6,12 @@
 
 using namespace std;
 
+int LINES = 1;
+bool If_Error = false;
+string File_Opened = "./.txt";
+string File_Output = "./.dyd";
+string Error_File_Name = "./.err";
+
 int main(int argc,char *argv[])
 {
 	File_Opened.insert(2, argv[1]);

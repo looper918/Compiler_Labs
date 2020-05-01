@@ -3,11 +3,7 @@
 #include<string>
 using namespace std;
 
-int LINES = 1;
-bool If_Error = false;
-string File_Opened = "./.txt";
-string File_Output = "./.dyd";
-string Error_File_Name = "./.err";
+
 
 bool IfCharacter(char); //判断是否为小写字母
 bool IfNumber(char);  //判断是否为数字
