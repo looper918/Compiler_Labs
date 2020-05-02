@@ -7,20 +7,21 @@
 #include"Parser.h"
 using namespace std;
 
+vector<Statements> text;
+
+vector<Statements>::iterator pointer;
+int LINE = 1;
+
 int main(int argc, char*argv[])
 {
-	vector<Statements> text;
-	ReadFile(text,argv[1]);
-	for (Statements i : text)
-	{
-		cout << i .statement<< endl;
-		cout << i.code << endl;
-	}
+
+	ReadFile(argv[1]);
+	Program();
 	system("pause");
 	return 0;
 }
 
-void ReadFile(vector<Statements> &text,string FileName)
+void ReadFile(string FileName)
 {
 	ifstream File_Input;
 	string File_name = "./.dyd";
@@ -40,5 +41,8 @@ void ReadFile(vector<Statements> &text,string FileName)
 		input >> new_statement.statement >> new_statement.code;
 		text.push_back(new_statement);
 	}
+	pointer = text.begin();
 }
+
+
 
