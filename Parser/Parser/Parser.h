@@ -7,40 +7,6 @@
 #include<iomanip>
 using namespace std;
 
-class Statements
-{
-public:
-	string statement;
-	int code;
-};
-
-class Variables
-{
-	string vname;  //变量名
-	string vproc;  //所属过程
-	bool vkind;  //分类
-	string vtype; //变量类型
-	int vlev;//变量层次
-	int vadr;//变量位置
-public:
-	Variables();
-	Variables(string, string, bool, int, int,string);//初始化类
-	bool IfNotDefined();  //判断是否已定义
-	bool IfParameter();
-	void WriteFile(string);
-	
-};
-
-class Error
-{
-	int ErrorCode;
-	int ErrorLine;
-
-
-};
-
-
-
 
 #define BEGIN 1
 #define END 2
@@ -57,12 +23,64 @@ class Error
 #define EOF 25
 
 //出错处理类型
-#define LACK 1
+#define LACK_OF "LACK OF"
+#define VARIABLE_ALREADY_DEFINED "VARIABLE ALREAD DEFINED"
+#define VARIABLE_NOT_DEFINED "VARIABLE NOT DEFINED"
+//#define DOES_NOT_MATCH ""
+
+class Statements
+{
+public:
+	string statement;
+	int code;
+	static void ReadFile();
+};
 
 
+class Processes
+{
+	string pname;
+	string ptype;
+	int plev;
+	int fadr;
+	int ladr;
+public:
+	Processes(string, int, string);
+	static void WriteFile();
+	bool IfInTheTable();
+};
 
 
-void ReadFile(string Filename); //读文件
+class Variables
+{
+	string vname;  //变量名
+	string vproc;  //所属过程
+	bool vkind;  //分类
+	string vtype; //变量类型
+	int vlev;//变量层次
+	int vadr;//变量位置
+public:
+	Variables(string, string, bool, int, int,string);//初始化类
+	bool IfNotDefined();  //判断是否已定义
+	bool IfParameter();
+	static void WriteFile();
+	friend void Processes::WriteFile();
+};
+
+
+class Error
+{
+	string ErrorType;
+	int ErrorLine;
+	string ErrorDisCription;
+public:
+	Error(string, string, int);
+	static void WriteFile();
+
+
+};
+
+
 void Advance();
 void ErrorHandling(string ErrorDiscription, int ErrorCode);//出错处理
 

@@ -1,42 +1,55 @@
 #include"Parser.h"
 
-
 vector<Statements> text;
-
 vector<Variables> variable;
-
+vector<Processes> processes;
+vector<Error> errors;
 vector<Statements>::iterator pointer;
 
+extern string Dys;
+extern string Dyd;
+extern string Pro;
+extern string Var;
+extern string Err;
 
-
-int line = 1;
 bool ifparameter = false;
 string nowprocess = "main";
 int nowlevel = 0;
 int location=0;
+int line = 1;
+
 
 //读文件
-void ReadFile(string FileName)
+void Statements::ReadFile()
 {
 	ifstream File_Input;
-	string File_name = "./.dyd";
-	File_name.insert(2, FileName);
 	string temp;
-	File_Input.open(File_name);
+	File_Input.open(Dyd);
 	if (!File_Input)
 	{
 		cout << "File Open Failed" << endl;
 		exit(0);
 	}
+
+	ofstream File_Output;
+	File_Output.open(Dys);
+	if (!File_Output)
+	{
+		cout << "File Open Failed" << endl;
+		exit(0);
+	}
+
 	while (!File_Input.eof())
 	{
 		getline(File_Input, temp);
+		File_Output << temp << endl;
 		stringstream input(temp);
 		Statements new_statement;
 		input >> new_statement.statement >> new_statement.code;
 		text.push_back(new_statement);
 	}
-	pointer = text.begin();
+	File_Input.close();
+	File_Output.close();
 }
 
 //将当前输入指针切换到下一个
@@ -52,10 +65,6 @@ void Advance()
 
 
 //Variables的函数
-Variables::Variables()
-{
-
-}
 
 Variables::Variables(string vname, string vproc, bool vkind, int vlev, int vadr, string vtype="integer")
 {
@@ -67,7 +76,7 @@ Variables::Variables(string vname, string vproc, bool vkind, int vlev, int vadr,
 	this->vadr = vadr;
 }
 
-//判断类是否未定义
+//判断对象是否未定义
 bool Variables::IfNotDefined()
 {
 	bool notdefined=true;
@@ -89,12 +98,10 @@ bool Variables::IfParameter()
 }
 
 //写变量名表文件
-void Variables::WriteFile(string filename)
+void Variables::WriteFile()
 {
 	ofstream File_Output;
-	string File_Name = "./.var";
-	File_Name.insert(2, filename);
-	File_Output.open(File_Name, ios_base::out | ios_base::app);
+	File_Output.open(Var);
 	if (!File_Output)
 	{
 		cout << "File Open Failed" << endl;
@@ -120,29 +127,120 @@ void Variables::WriteFile(string filename)
 }
 
 
+//Processes的函数
+
+Processes::Processes(string pname, int plev, string ptype= "integer")
+{
+	this->pname = pname;
+	this->plev = plev;
+	this->ptype = ptype;
+}
+
+//写过程名表文件
+void Processes::WriteFile()
+{
+	//初始化fadr和ladr
+   bool flag = true;
+   for (Processes & i : processes)
+   {
+	   for (Variables j : variable)
+	   {
+		   if (i.pname == j.vproc)
+		   {
+			   if (flag)
+			   {
+				   i.fadr = j.vadr;
+				   i.ladr = j.vadr;
+				   flag = false;
+			   }
+			   else
+				   i.ladr = j.vadr;
+			   //break;
+		   }
+	   }
+	   flag = true;
+   }
+	ofstream File_Output;
+	File_Output.open(Pro);
+	if (!File_Output)
+	{
+		cout << "File Open Failed" << endl;
+		exit(0);
+	}
+	File_Output.fill(' ');
+	File_Output << left << setw(16) << "pname";
+	File_Output << left << setw(16) << "ptype";
+	File_Output << left << setw(16) << "plev";
+	File_Output << left << setw(16) << "fadr";
+	File_Output << left << setw(16) << "ladr" << endl;
+
+	for (Processes i : processes)
+	{
+		File_Output << left << setw(16) << i.pname;
+		File_Output << left << setw(16) << i.ptype;
+		File_Output << left << setw(16) << i.plev;
+		File_Output << left << setw(16) << i.fadr;
+		File_Output << left << setw(16) << i.ladr<<endl;
+	}
+	File_Output.close();
+}
+
+//判断对象是否未在表里 
+bool Processes::IfInTheTable()
+{
+	for (Processes i : processes)
+	{
+		if (this->pname == i.pname && this->plev == i.plev)
+			return false;
+	}
+	return true;
+}
+
+//Error的函数
+
+Error::Error(string ErrorDiscription, string ErrorType, int ErrorLine)
+{
+	this->ErrorDisCription = ErrorDiscription;
+	this->ErrorType = ErrorType;
+	this->ErrorLine = ErrorLine;
+}
+
+void Error::WriteFile()
+{
+	ofstream File_Output;
+	File_Output.open(Err);
+	if (!File_Output)
+	{
+		cout << "File Open Failed" << endl;
+		exit(0);
+	}
+	for (Error i:errors)
+	{
+		File_Output << "***LINE:" << i.ErrorLine << i.ErrorType<<" "<<i.ErrorDisCription<<endl;
+	}
+	File_Output.close();
+}
 
 
 //出错处理
 void ErrorHandling(string ErrorDiscription, int ErrorCode)
 {
-	switch (ErrorCode)
-	{
-	case LACK:
-	{
-		cout << "***LINE " << line << " " << " LACK " << ErrorDiscription<<endl;
-	}
-	}
+
+	
 }
 
 //程序
 void  Program()
 {
+	pointer = text.begin();
 	SubProgram();
 }
 
 //分程序
 void  SubProgram() 
 {
+	Processes main("main", 0);
+	processes.push_back(main);
 	if ((*pointer).code == BEGIN)
 	{
 		Advance();
@@ -154,13 +252,13 @@ void  SubProgram()
 			if ((*pointer).code == END)
 				Advance();
 			else
-				ErrorHandling("end", LACK);
+				ErrorHandling("end", LACK_OF);
 		}
 		else
-			ErrorHandling(";", LACK);
+			ErrorHandling(";", LACK_OF);
 	}
 	else 
-		ErrorHandling("begin", LACK);
+		ErrorHandling("begin", LACK_OF);
 }
 
 //说明语句表
@@ -221,7 +319,7 @@ void  VariableDescription()
 		Variable();
 	}
 	else
-		ErrorHandling("integer", LACK);
+		ErrorHandling("integer", LACK_OF);
 }
 
 //函数说明
@@ -252,19 +350,19 @@ void  FunctionDescription()
 						FunctionBody();
 					}
 					else
-						ErrorHandling(";", LACK);
+						ErrorHandling(";", LACK_OF);
 				}
 				else
-					ErrorHandling(")", LACK);
+					ErrorHandling(")", LACK_OF);
 			}
 			else
-			ErrorHandling("(", LACK);
+			ErrorHandling("(", LACK_OF);
 		}
 		else
-			ErrorHandling("function", LACK);
+			ErrorHandling("function", LACK_OF);
 	}
 	else
-		ErrorHandling("integer", LACK);
+		ErrorHandling("integer", LACK_OF);
 	nowprocess = TempToStoreLastProcess;
 	nowlevel--;
 }
@@ -274,30 +372,32 @@ void  Variable()  //变量重定义在此处判断
 {
 	//Variables(string vname, string vproc, bool vkind, int vlev, int vadr, string vtype="integer")
 	Variables new_variable((*pointer).statement, nowprocess, ifparameter, nowlevel, location);
-
-	if ((*(pointer - 1)).code == INTEGER)
+	if ((*pointer).statement != nowprocess)  //非返回值
 	{
-		if (new_variable.IfNotDefined() || variable.size() == 0)
+		if ((*(pointer - 1)).code == INTEGER)
 		{
-			variable.push_back(new_variable);
-			location++;
-		}
+			if (new_variable.IfNotDefined() || variable.size() == 0)
+			{
+				variable.push_back(new_variable);
+				location++;
+			}
 
-		else //重定义
-			//出错处理-变量重定义
-			cout << "Variable " << (*pointer).statement << " Defined Several Times" << endl;
-	}
-	else
-	{
-		if (new_variable.IfParameter() && new_variable.IfNotDefined())  //变量为参数
-		{
-			variable.push_back(new_variable);
-			location++;
+			else //重定义
+				//出错处理-变量重定义
+				cout << "Variable " << (*pointer).statement << " Defined Several Times" << endl;
 		}
-		else if (new_variable.IfNotDefined())
-			//出错处理-变量未定义
-				//cout << "Variable " << (*pointer).statement << " Not Defined" << endl;
-			cout << "pointer is " << (*pointer).statement << " in line " << line << endl;
+		else
+		{
+			if (new_variable.IfParameter() && new_variable.IfNotDefined())  //变量为参数
+			{
+				variable.push_back(new_variable);
+				location++;
+			}
+			else if (new_variable.IfNotDefined())
+				//出错处理-变量未定义
+					//cout << "Variable " << (*pointer).statement << " Not Defined" << endl;
+				cout << "pointer is " << (*pointer).statement << " in line " << line << endl;
+		}
 	}
 	Identifier();
 }
@@ -342,6 +442,9 @@ void  Parameter()
 //函数体
 void  FunctionBody()
 {
+	Processes new_process((*(pointer - 6)).statement, nowlevel);
+	if(new_process.IfInTheTable())
+	    processes.push_back(new_process);
 	if ((*pointer).code == BEGIN)
 	{
 		Advance();
@@ -353,13 +456,13 @@ void  FunctionBody()
 			if ((*pointer).code == END)
 				Advance();
 			else 
-				ErrorHandling("end", LACK);
+				ErrorHandling("end", LACK_OF);
 		}
 		else
-			ErrorHandling(";", LACK);
+			ErrorHandling(";", LACK_OF);
 	}
 	else
-		ErrorHandling("begin", LACK);
+		ErrorHandling("begin", LACK_OF);
 	
 }
 
@@ -381,6 +484,9 @@ void  ReadSentence()
 {
 	if ((*pointer).code == READ)
 	{
+		Processes new_process((*pointer).statement, nowlevel);
+		if (new_process.IfInTheTable())
+			processes.push_back(new_process);
 		Advance();
 		if ((*pointer).code == 21)
 		{
@@ -393,14 +499,14 @@ void  ReadSentence()
 			if ((*pointer).code == 22)
 				Advance();
 			else
-				ErrorHandling(")", LACK);
+				ErrorHandling(")", LACK_OF);
 			nowprocess = TempToStoreLastProcess;
 		}
 		else
-			ErrorHandling("(", LACK);
+			ErrorHandling("(", LACK_OF);
 	}
 	else
-		ErrorHandling("read", LACK);
+		ErrorHandling("read", LACK_OF);
 }
 
 //写语句
@@ -408,6 +514,9 @@ void  WriteSentence()
 {
 	if ((*pointer).code == WRITE)
 	{
+		Processes new_process((*pointer).statement, nowlevel);
+		if (new_process.IfInTheTable())
+			processes.push_back(new_process);
 		Advance();
 		if ((*pointer).code == 21)
 		{
@@ -420,14 +529,14 @@ void  WriteSentence()
 			if ((*pointer).code == 22)
 				Advance();
 			else
-				ErrorHandling(")", LACK);
+				ErrorHandling(")", LACK_OF);
 			nowprocess = TempToStoreLastProcess;
 		}
 		else
-			ErrorHandling("(", LACK);
+			ErrorHandling("(", LACK_OF);
 	}
 	else
-		ErrorHandling("write", LACK);
+		ErrorHandling("write", LACK_OF);
 }
 
 //赋值语句
@@ -440,7 +549,7 @@ void  AssignmentStatement()
 		ArithmeticExpression();
 	}
 	else
-		ErrorHandling(":=", LACK);
+		ErrorHandling(":=", LACK_OF);
 }
 
 //条件语句
@@ -460,13 +569,13 @@ void  ConditionalStatement()
 				ExecuteStatement();
 			}
 			else
-				ErrorHandling("else", LACK);
+				ErrorHandling("else", LACK_OF);
 		}
 		else
-			ErrorHandling("then", LACK);
+			ErrorHandling("then", LACK_OF);
 	}
 	else
-		ErrorHandling("if", LACK);
+		ErrorHandling("if", LACK_OF);
 }
 
 //算术表达式
@@ -541,12 +650,12 @@ void  FunctionCall()
 		if ((*pointer).code == 22)
 			Advance();
 		else
-			ErrorHandling(")", LACK);
+			ErrorHandling(")", LACK_OF);
 		ifparameter = false;
 		nowprocess = TempToStoreLastProcess;
 	}
 	else
-		ErrorHandling("(", LACK);
+		ErrorHandling("(", LACK_OF);
 }
 
 /*
@@ -589,7 +698,6 @@ void  RelationalOperator()
 	default:
 		//出错处理-关系运算符错误
 		cout << "Error" << endl;
-		
 	}
 }
 

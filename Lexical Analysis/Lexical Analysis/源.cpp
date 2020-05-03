@@ -2,6 +2,7 @@
 #include<string>
 #include<fstream>
 #include<cstdlib>
+#include<iomanip>
 #include"auxiliary.h"
 
 using namespace std;
@@ -83,21 +84,19 @@ string Getprogram()
 	return text;
 }
 
-void FileStore(string temp, string code, int num = 1)
+void FileStore(string temp, string code)
 {
 	if (If_Error)
 	{
 		If_Error = false;
-		//cout << "Error" << endl;
-		return;   //����ʱ����ӡ����
-	}
-	temp.resize(num);
+		system("pause");
+		return;   //文件打开失败
+	};
 	ofstream File_out;
-	File_out.open(File_Output, ios_base::out | ios_base::app);//��׷��дģʽ���ĵ�
-	while (temp.size() < 16)
-		temp = " " + temp;
-	cout << temp << " " << code << endl;
-	File_out << temp << " " << code << endl;
+	File_out.open(File_Output, ios_base::out | ios_base::app);//追加写
+	File_out.fill(' ');
+	cout <<left<<setw(16)<< temp << " " << code << endl;
+	File_out << left<<setw(16)<<temp << " " << code << endl;
 	File_out.close();
 }
 
@@ -108,9 +107,9 @@ void ErrorHandling(int Error_Code)
 	Error_File.open(Error_File_Name, ios_base::out | ios_base::app);
 	switch (Error_Code)
 	{
-	case 0:Error_File << "***LINE: " << LINES << "  Invalid Character" << endl; break; //�Ƿ��ַ�
-	case 1:Error_File << "***LINE: " << LINES << "  : does not match" << endl; break;   //����ƥ��
-	case 2:Error_File << "***LINE: " << LINES << "  identifier is too long" << endl; break;  //�������
+	case 0:Error_File << "***LINE: " << LINES << "  Invalid Character" << endl; break; //非法字符
+	case 1:Error_File << "***LINE: " << LINES << "  : does not match" << endl; break;   //：不匹配
+	case 2:Error_File << "***LINE: " << LINES << "  identifier is too long" << endl; break;  //标识符溢出
 	}
 	Error_File.close();
 }
@@ -123,13 +122,13 @@ void Analysis(string text)
 	while (*next_pointer != '\0')
 	{
 
-		if (*now_pointer == ' ')//�ո� 0->0
+		if (*now_pointer == ' ')// 0->0
 		{
 			now_pointer++;
 			next_pointer++;
 			continue;
 		}
-		else if (IfCharacter(*now_pointer))//��ĸ 0->1
+		else if (IfCharacter(*now_pointer))// 0->1
 		{
 			while (IfCharacter(*next_pointer) || IfNumber(*next_pointer))
 			{
@@ -145,16 +144,16 @@ void Analysis(string text)
 			Buffer[i++] = *now_pointer;
 			if (i > 16) ErrorHandling(2);
 
-			if (IfCharacterEqual(Buffer, "begin", 4)) FileStore(Buffer, "01", i);
-			else if (IfCharacterEqual(Buffer, "end", 2)) FileStore(Buffer, "02", i);
-			else if (IfCharacterEqual(Buffer, "integer", 6)) FileStore(Buffer, "03", i);
-			else if (IfCharacterEqual(Buffer, "if", 1)) FileStore(Buffer, "04", i);
-			else if (IfCharacterEqual(Buffer, "then", 3)) FileStore(Buffer, "05", i);
-			else if (IfCharacterEqual(Buffer, "else", 3)) FileStore(Buffer, "06", i);
-			else if (IfCharacterEqual(Buffer, "function", 7)) FileStore(Buffer, "07", i);
-			else if (IfCharacterEqual(Buffer, "read", 3)) FileStore(Buffer, "08", i);
-			else if (IfCharacterEqual(Buffer, "write", 4)) FileStore(Buffer, "09", i);
-			else FileStore(Buffer, "10", i);
+			if (IfCharacterEqual(Buffer, "begin", 4)) FileStore(Buffer, "01");
+			else if (IfCharacterEqual(Buffer, "end", 2)) FileStore(Buffer, "02");
+			else if (IfCharacterEqual(Buffer, "integer", 6)) FileStore(Buffer, "03");
+			else if (IfCharacterEqual(Buffer, "if", 1)) FileStore(Buffer, "04");
+			else if (IfCharacterEqual(Buffer, "then", 3)) FileStore(Buffer, "05");
+			else if (IfCharacterEqual(Buffer, "else", 3)) FileStore(Buffer, "06");
+			else if (IfCharacterEqual(Buffer, "function", 7)) FileStore(Buffer, "07");
+			else if (IfCharacterEqual(Buffer, "read", 3)) FileStore(Buffer, "08");
+			else if (IfCharacterEqual(Buffer, "write", 4)) FileStore(Buffer, "09");
+			else FileStore(Buffer, "10");
 			while (i-- != 0)
 				Buffer[i] = NULL;
 			i = 0;
@@ -192,13 +191,13 @@ void Analysis(string text)
 		{
 			if (*next_pointer == '=') //10->11
 			{
-				FileStore("<=", "14", 2);
+				FileStore("<=", "14");
 				now_pointer++;
 				next_pointer++;
 			}
 			else if (*next_pointer == '>') //10->12
 			{
-				FileStore("<>", "13", 2);
+				FileStore("<>", "13");
 				now_pointer++;
 				next_pointer++;
 			}
@@ -211,7 +210,7 @@ void Analysis(string text)
 		{
 			if (*next_pointer == '=') //14->15
 			{
-				FileStore(">=", "16", 2);
+				FileStore(">=", "16");
 				now_pointer++;
 				next_pointer++;
 			}
@@ -222,7 +221,7 @@ void Analysis(string text)
 		{
 			if (*next_pointer == '=') //ƥ��ɹ�
 			{
-				FileStore(":=", "20", 2);
+				FileStore(":=", "20");
 				now_pointer++;
 				next_pointer++;
 			}
@@ -242,7 +241,7 @@ void Analysis(string text)
 			i = 0;
 			if (*now_pointer == '\n')
 			{
-				FileStore("EOLN", "24", 4);
+				FileStore("EOLN", "24");
 				LINES++;
 			}
 			else
@@ -251,5 +250,5 @@ void Analysis(string text)
 		now_pointer++;
 		next_pointer++;
 	}
-	FileStore("EOF", "25", 3);
+	FileStore("EOF", "25");
 }
