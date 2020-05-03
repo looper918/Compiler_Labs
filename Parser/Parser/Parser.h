@@ -1,17 +1,45 @@
 #pragma once
 #include<vector>
 #include<string>
+#include<sstream>
+#include<fstream>
 #include<iostream>
+#include<iomanip>
 using namespace std;
 
-struct Statements
+class Statements
 {
+public:
 	string statement;
 	int code;
 };
 
-extern vector<Statements>::iterator pointer;
-extern int LINE;
+class Variables
+{
+	string vname;  //变量名
+	string vproc;  //所属过程
+	bool vkind;  //分类
+	string vtype; //变量类型
+	int vlev;//变量层次
+	int vadr;//变量位置
+public:
+	Variables();
+	Variables(string, string, bool, int, int,string);//初始化类
+	bool IfNotDefined();  //判断是否已定义
+	bool IfParameter();
+	void WriteFile(string);
+	
+};
+
+class Error
+{
+	int ErrorCode;
+	int ErrorLine;
+
+
+};
+
+
 
 
 #define BEGIN 1
@@ -28,7 +56,7 @@ extern int LINE;
 #define EOLN 24
 #define EOF 25
 
-
+//出错处理类型
 #define LACK 1
 
 
@@ -66,7 +94,7 @@ void  ItemA();//项'
 void  Factor();//因子
 void  Constant();//常数
 void  FunctionCall();//函数调用
-void  UnsignedInteger(); //无符号整数
+//void  UnsignedInteger(); //无符号整数
 //void  UnsignedIntegerA(); //无符号整数'
 void  ConditionalExpression(); //条件表达式
 void  RelationalOperator();  //关系运算符

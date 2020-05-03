@@ -1,18 +1,126 @@
 #include"Parser.h"
-#include<string>
 
-using namespace std;
+
+vector<Statements> text;
+
+vector<Variables> variable;
+
+vector<Statements>::iterator pointer;
+
+
+
+int line = 1;
+bool ifparameter = false;
+string nowprocess = "main";
+int nowlevel = 0;
+int location=0;
+
+//读文件
+void ReadFile(string FileName)
+{
+	ifstream File_Input;
+	string File_name = "./.dyd";
+	File_name.insert(2, FileName);
+	string temp;
+	File_Input.open(File_name);
+	if (!File_Input)
+	{
+		cout << "File Open Failed" << endl;
+		exit(0);
+	}
+	while (!File_Input.eof())
+	{
+		getline(File_Input, temp);
+		stringstream input(temp);
+		Statements new_statement;
+		input >> new_statement.statement >> new_statement.code;
+		text.push_back(new_statement);
+	}
+	pointer = text.begin();
+}
 
 //将当前输入指针切换到下一个
 void Advance()
 {
 	pointer++;
-	if ((*pointer).code==24)
+	if ((*pointer).code == EOLN)
 	{
-		LINE++;
+		line++;
 		Advance();
 	}
 }
+
+
+//Variables的函数
+Variables::Variables()
+{
+
+}
+
+Variables::Variables(string vname, string vproc, bool vkind, int vlev, int vadr, string vtype="integer")
+{
+	this->vname = vname;
+	this->vproc = vproc;
+	this->vkind = vkind;
+	this->vlev = vlev;
+	this->vtype = vtype;
+	this->vadr = vadr;
+}
+
+//判断类是否未定义
+bool Variables::IfNotDefined()
+{
+	bool notdefined=true;
+	for (Variables i : variable)
+	{
+		if (this->vname == i.vname && this->vproc == i.vproc &&this->vkind==i.vkind && this->vlev == i.vlev )
+		{
+			notdefined = false;
+			break;
+		}
+	}
+	return notdefined;
+}
+
+//判断类是否为形参
+bool Variables::IfParameter()
+{
+	return this->vkind;
+}
+
+//写变量名表文件
+void Variables::WriteFile(string filename)
+{
+	ofstream File_Output;
+	string File_Name = "./.var";
+	File_Name.insert(2, filename);
+	File_Output.open(File_Name, ios_base::out | ios_base::app);
+	if (!File_Output)
+	{
+		cout << "File Open Failed" << endl;
+		exit(0);
+	}
+	File_Output.fill(' ');
+	File_Output <<left<< setw(16) << "vname";
+	File_Output <<left<< setw(16) << "vproc";
+	File_Output << left<<setw(16) << "vkind";
+	File_Output <<left<< setw(16) << "vlev";
+	File_Output <<left<< setw(16) << "vtype";
+	File_Output <<left<< setw(16) << "vadr" << endl;
+	for (Variables i : variable)
+	{
+		File_Output << left<<setw(16) << i.vname;
+		File_Output <<left<< setw(16) << i.vproc;
+		File_Output <<left<< setw(16) << i.vkind;
+		File_Output <<left<< setw(16) << i.vlev;
+		File_Output << left<<setw(16) << i.vtype;
+		File_Output<<left<<setw(16)<<i.vadr<< endl;
+	}
+	File_Output.close();
+}
+
+
+
 
 //出错处理
 void ErrorHandling(string ErrorDiscription, int ErrorCode)
@@ -21,7 +129,7 @@ void ErrorHandling(string ErrorDiscription, int ErrorCode)
 	{
 	case LACK:
 	{
-		cout << "***LINE " << LINE << " " << " LACK " << ErrorDiscription<<endl;
+		cout << "***LINE " << line << " " << " LACK " << ErrorDiscription<<endl;
 	}
 	}
 }
@@ -97,8 +205,7 @@ void  ExecutionStatementListA()
 
 //说明语句
 void  ExplanatoryStatement()
-{
-	auto next_pointer = pointer + 1;   //可能存在问题
+{	auto next_pointer = pointer + 1;   //可能存在问题
 	if ((*next_pointer).code == FUNCTION)
 		FunctionDescription();
 	else
@@ -120,6 +227,9 @@ void  VariableDescription()
 //函数说明
 void  FunctionDescription()
 {
+	nowlevel++;
+	string TempToStoreLastProcess = nowprocess;
+	nowprocess = (*(pointer +2)).statement;
 	if ((*pointer).code == INTEGER)
 	{
 		Advance();
@@ -130,7 +240,9 @@ void  FunctionDescription()
 			if ((*pointer).code == 21)
 			{
 				Advance();
+				ifparameter = true;
 				Parameter();
+				ifparameter = false;
 				if ((*pointer).code == 22)
 				{
 					Advance();
@@ -153,21 +265,48 @@ void  FunctionDescription()
 	}
 	else
 		ErrorHandling("integer", LACK);
+	nowprocess = TempToStoreLastProcess;
+	nowlevel--;
 }
 
 //变量
-void  Variable()  
+void  Variable()  //变量重定义在此处判断
 {
+	//Variables(string vname, string vproc, bool vkind, int vlev, int vadr, string vtype="integer")
+	Variables new_variable((*pointer).statement, nowprocess, ifparameter, nowlevel, location);
+
+	if ((*(pointer - 1)).code == INTEGER)
+	{
+		if (new_variable.IfNotDefined() || variable.size() == 0)
+		{
+			variable.push_back(new_variable);
+			location++;
+		}
+
+		else //重定义
+			//出错处理-变量重定义
+			cout << "Variable " << (*pointer).statement << " Defined Several Times" << endl;
+	}
+	else
+	{
+		if (new_variable.IfParameter() && new_variable.IfNotDefined())  //变量为参数
+		{
+			variable.push_back(new_variable);
+			location++;
+		}
+		else if (new_variable.IfNotDefined())
+			//出错处理-变量未定义
+				//cout << "Variable " << (*pointer).statement << " Not Defined" << endl;
+			cout << "pointer is " << (*pointer).statement << " in line " << line << endl;
+	}
 	Identifier();
 }
 
+
 //标识符
-void  Identifier() //变量重定义在此处判断
+void  Identifier() 
 {
 	Advance();
-	//Letter();
-	//IdentifierA();
-
 }
 //由于标识符一次性读入，故不需要下列产生式起作用
 /*
@@ -221,12 +360,12 @@ void  FunctionBody()
 	}
 	else
 		ErrorHandling("begin", LACK);
+	
 }
 
 //执行语句
 void  ExecuteStatement()  
 {
-	//auto next_pointer = pointer + 1;
 	if ((*pointer).code == READ)
 		ReadSentence();
 	else if ((*pointer).code == WRITE)
@@ -246,11 +385,16 @@ void  ReadSentence()
 		if ((*pointer).code == 21)
 		{
 			Advance();
+			string TempToStoreLastProcess = nowprocess;
+			nowprocess = (*(pointer - 2)).statement;
+			ifparameter = true;
 			Variable();
+			ifparameter = false;
 			if ((*pointer).code == 22)
 				Advance();
 			else
 				ErrorHandling(")", LACK);
+			nowprocess = TempToStoreLastProcess;
 		}
 		else
 			ErrorHandling("(", LACK);
@@ -268,11 +412,16 @@ void  WriteSentence()
 		if ((*pointer).code == 21)
 		{
 			Advance();
+			string TempToStoreLastProcess = nowprocess;
+			nowprocess = (*(pointer -2)).statement;
+			ifparameter = true;
 			Variable();
+			ifparameter = false;
 			if ((*pointer).code == 22)
 				Advance();
 			else
 				ErrorHandling(")", LACK);
+			nowprocess = TempToStoreLastProcess;
 		}
 		else
 			ErrorHandling("(", LACK);
@@ -385,11 +534,16 @@ void  FunctionCall()
 	if ((*pointer).code == 21)
 	{
 		Advance();
+		string TempToStoreLastProcess = nowprocess;
+		nowprocess = (*(pointer - 2)).statement;
+		ifparameter = true;
 		ArithmeticExpression();
 		if ((*pointer).code == 22)
 			Advance();
 		else
 			ErrorHandling(")", LACK);
+		ifparameter = false;
+		nowprocess = TempToStoreLastProcess;
 	}
 	else
 		ErrorHandling("(", LACK);
