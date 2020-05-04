@@ -84,19 +84,21 @@ string Getprogram()
 	return text;
 }
 
-void FileStore(string temp, string code)
+void FileStore(string temp, string code,int num=1)
 {
 	if (If_Error)
 	{
 		If_Error = false;
-		system("pause");
+		//system("pause");
 		return;   //文件打开失败
 	};
+	temp.resize(num);
+	while (temp.size() < 16)
+		temp = " " + temp;
 	ofstream File_out;
 	File_out.open(File_Output, ios_base::out | ios_base::app);//追加写
-	File_out.fill(' ');
-	cout <<left<<setw(16)<< temp << " " << code << endl;
-	File_out << left<<setw(16)<<temp << " " << code << endl;
+	cout << temp << " " << code << endl;
+	File_out <<temp << " " << code << endl;
 	File_out.close();
 }
 
@@ -144,21 +146,21 @@ void Analysis(string text)
 			Buffer[i++] = *now_pointer;
 			if (i > 16) ErrorHandling(2);
 
-			if (IfCharacterEqual(Buffer, "begin", 4)) FileStore(Buffer, "01");
-			else if (IfCharacterEqual(Buffer, "end", 2)) FileStore(Buffer, "02");
-			else if (IfCharacterEqual(Buffer, "integer", 6)) FileStore(Buffer, "03");
-			else if (IfCharacterEqual(Buffer, "if", 1)) FileStore(Buffer, "04");
-			else if (IfCharacterEqual(Buffer, "then", 3)) FileStore(Buffer, "05");
-			else if (IfCharacterEqual(Buffer, "else", 3)) FileStore(Buffer, "06");
-			else if (IfCharacterEqual(Buffer, "function", 7)) FileStore(Buffer, "07");
-			else if (IfCharacterEqual(Buffer, "read", 3)) FileStore(Buffer, "08");
-			else if (IfCharacterEqual(Buffer, "write", 4)) FileStore(Buffer, "09");
-			else FileStore(Buffer, "10");
+			if (IfCharacterEqual(Buffer, "begin", 4)) FileStore(Buffer, "01",i);
+			else if (IfCharacterEqual(Buffer, "end", 2)) FileStore(Buffer, "02",i);
+			else if (IfCharacterEqual(Buffer, "integer", 6)) FileStore(Buffer, "03",i);
+			else if (IfCharacterEqual(Buffer, "if", 1)) FileStore(Buffer, "04",i);
+			else if (IfCharacterEqual(Buffer, "then", 3)) FileStore(Buffer, "05",i);
+			else if (IfCharacterEqual(Buffer, "else", 3)) FileStore(Buffer, "06",i);
+			else if (IfCharacterEqual(Buffer, "function", 7)) FileStore(Buffer, "07",i);
+			else if (IfCharacterEqual(Buffer, "read", 3)) FileStore(Buffer, "08",i);
+			else if (IfCharacterEqual(Buffer, "write", 4)) FileStore(Buffer, "09",i);
+			else FileStore(Buffer, "10",i);
 			while (i-- != 0)
 				Buffer[i] = NULL;
 			i = 0;
 		}
-		else if (IfNumber(*now_pointer))//���� 0->3
+		else if (IfNumber(*now_pointer))// 0->3
 		{
 			while (IfNumber(*next_pointer)) //3->3
 			{
@@ -172,7 +174,7 @@ void Analysis(string text)
 				next_pointer++;
 			}
 			Buffer[i++] = *now_pointer;
-			FileStore(Buffer, "11");
+			FileStore(Buffer, "11",i);
 			while (i-- != 0)
 				Buffer[i] = NULL;
 			i = 0;
@@ -191,13 +193,13 @@ void Analysis(string text)
 		{
 			if (*next_pointer == '=') //10->11
 			{
-				FileStore("<=", "14");
+				FileStore("<=", "14",2);
 				now_pointer++;
 				next_pointer++;
 			}
 			else if (*next_pointer == '>') //10->12
 			{
-				FileStore("<>", "13");
+				FileStore("<>", "13",2);
 				now_pointer++;
 				next_pointer++;
 			}
@@ -210,7 +212,7 @@ void Analysis(string text)
 		{
 			if (*next_pointer == '=') //14->15
 			{
-				FileStore(">=", "16");
+				FileStore(">=", "16",2);
 				now_pointer++;
 				next_pointer++;
 			}
@@ -219,9 +221,9 @@ void Analysis(string text)
 		}
 		else if (*now_pointer == ':')
 		{
-			if (*next_pointer == '=') //ƥ��ɹ�
+			if (*next_pointer == '=') //匹配成功
 			{
-				FileStore(":=", "20");
+				FileStore(":=", "20",2);
 				now_pointer++;
 				next_pointer++;
 			}
@@ -241,7 +243,7 @@ void Analysis(string text)
 			i = 0;
 			if (*now_pointer == '\n')
 			{
-				FileStore("EOLN", "24");
+				FileStore("EOLN", "24",4);
 				LINES++;
 			}
 			else
@@ -250,5 +252,5 @@ void Analysis(string text)
 		now_pointer++;
 		next_pointer++;
 	}
-	FileStore("EOF", "25");
+	FileStore("EOF", "25",3);
 }
