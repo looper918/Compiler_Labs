@@ -2,7 +2,6 @@
 #include<string>
 #include<fstream>
 #include<cstdlib>
-#include<iomanip>
 #include"auxiliary.h"
 
 using namespace std;
@@ -118,7 +117,7 @@ void ErrorHandling(int Error_Code)
 
 void Analysis(string text)
 {
-	char Buffer[20];
+char Buffer[20];
 	char *now_pointer = &text[0], *next_pointer = &text[1];
 	int i = 0;
 	while (*next_pointer != '\0')
