@@ -218,18 +218,11 @@ void Error::WriteFile()
 	}
 	for (Error i:errors)
 	{
-		File_Output << "***LINE:" << i.ErrorLine << i.ErrorType<<" "<<i.ErrorDisCription<<endl;
+		File_Output << "***LINE: " << i.ErrorLine << " "<<i.ErrorType<<" "<<i.ErrorDisCription<<endl;
 	}
 	File_Output.close();
 }
 
-
-//出错处理
-void ErrorHandling(string ErrorDiscription, string ErrorCode)
-{
-
-	
-}
 
 //程序
 void  Program()
@@ -333,7 +326,7 @@ void  ExecutionStatementListA()
 //说明语句
 void  ExplanatoryStatement()
 {	
-	auto next_pointer = pointer + 1;   //可能存在问题
+	auto next_pointer = pointer + 1;   
 	if ((*next_pointer).code == FUNCTION)
 		FunctionDescription();
 	else
@@ -429,7 +422,6 @@ void  Variable()  //变量重定义在此处判断
 				variable.push_back(new_variable);
 				location++;
 			}
-
 			else //重定义
 			{
 				Error new_error(line, VARIABLE_ALREADY_DEFINED);
@@ -548,6 +540,7 @@ void  ReadSentence()
 		if (new_process.IfInTheTable())
 			processes.push_back(new_process);
 		Advance();
+		
 		if ((*pointer).code == 21)
 		{
 			Advance();
@@ -565,11 +558,13 @@ void  ReadSentence()
 			}
 			nowprocess = TempToStoreLastProcess;
 		}
+		
 		else
 		{
 			Error new_error(line, LACK_OF,"(");
 			errors.push_back(new_error);
 		}
+
 	}
 	else
 	{
@@ -801,8 +796,7 @@ void  RelationalOperator()
 	 Advance();
 	 break;
 	default:
-		//出错处理-关系运算符错误
-		Error new_error(line, RELATION_TYPE_ERROR);
+		return;
 	}
 }
 

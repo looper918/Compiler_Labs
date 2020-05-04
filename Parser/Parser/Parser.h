@@ -7,7 +7,6 @@
 #include<iomanip>
 using namespace std;
 
-
 #define BEGIN 1
 #define END 2
 #define INTEGER 3
@@ -22,33 +21,32 @@ using namespace std;
 #define EOLN 24
 #define EOF 25
 
-//出错处理类型
+//错误类型
 #define LACK_OF " LACK OF "
 #define VARIABLE_ALREADY_DEFINED " VARIABLE ALREADY DEFINED "
 #define VARIABLE_NOT_DEFINED " VARIABLE NOT DEFINED "
 #define DOES_NOT_MATCH " DOES NOT MATCH "
-#define RELATION_TYPE_ERROR " RELATION TYPE ERROR "
 
 class Statements
 {
 public:
-	string statement;
-	int code;
-	static void ReadFile();
+	string statement;  //语句
+	int code;   //语句代码
+	static void ReadFile();  //读文件
 };
 
 
 class Processes
 {
-	string pname;
-	string ptype;
-	int plev;
-	int fadr;
-	int ladr;
+	string pname;  //过程名
+	string ptype;   //过程类型，默认integer
+	int plev;    //过程层次
+	int fadr;    //第一个变量在变量名表中的位置
+	int ladr;   //最后一个变量在变量名表中的位置
 public:
 	Processes(string, int, string,int,int);
-	static void WriteFile();
-	bool IfInTheTable();
+	static void WriteFile();    //写文件
+	bool IfInTheTable();   //过程是否已经在表里了
 };
 
 
@@ -63,27 +61,25 @@ class Variables
 public:
 	Variables(string, string, bool, int, int,string);//初始化类
 	bool IfNotDefined();  //判断是否已定义
-	bool IfParameter();
-	static void WriteFile();
+	bool IfParameter();    //判断是否是参数
+	static void WriteFile();   //写文件
 	friend void Processes::WriteFile();
 };
 
 
 class Error
 {
-	string ErrorType;
-	int ErrorLine;
-	string ErrorDisCription;
+	string ErrorType;   //错误的类型
+	int ErrorLine;     //错误所在行数
+	string ErrorDisCription;  //错误描述//
 public:
-	Error(int, string,string);
-	static void WriteFile();
-
-
+	Error(int, string,string);   
+	static void WriteFile();   //写文件
 };
 
 
 void Advance();
-void ErrorHandling(string ErrorDiscription, string  ErrorCode);//出错处理
+
 
 void  Program();   //程序
 void  SubProgram();  //分程序
