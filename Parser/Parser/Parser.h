@@ -23,10 +23,11 @@ using namespace std;
 #define EOF 25
 
 //出错处理类型
-#define LACK_OF "LACK OF"
-#define VARIABLE_ALREADY_DEFINED "VARIABLE ALREAD DEFINED"
-#define VARIABLE_NOT_DEFINED "VARIABLE NOT DEFINED"
-//#define DOES_NOT_MATCH ""
+#define LACK_OF " LACK OF "
+#define VARIABLE_ALREADY_DEFINED " VARIABLE ALREADY DEFINED "
+#define VARIABLE_NOT_DEFINED " VARIABLE NOT DEFINED "
+#define DOES_NOT_MATCH " DOES NOT MATCH "
+#define RELATION_TYPE_ERROR " RELATION TYPE ERROR "
 
 class Statements
 {
@@ -45,7 +46,7 @@ class Processes
 	int fadr;
 	int ladr;
 public:
-	Processes(string, int, string);
+	Processes(string, int, string,int,int);
 	static void WriteFile();
 	bool IfInTheTable();
 };
@@ -74,7 +75,7 @@ class Error
 	int ErrorLine;
 	string ErrorDisCription;
 public:
-	Error(string, string, int);
+	Error(int, string,string);
 	static void WriteFile();
 
 
@@ -82,7 +83,7 @@ public:
 
 
 void Advance();
-void ErrorHandling(string ErrorDiscription, int ErrorCode);//出错处理
+void ErrorHandling(string ErrorDiscription, string  ErrorCode);//出错处理
 
 void  Program();   //程序
 void  SubProgram();  //分程序

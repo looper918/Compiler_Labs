@@ -129,11 +129,13 @@ void Variables::WriteFile()
 
 //Processes的函数
 
-Processes::Processes(string pname, int plev, string ptype= "integer")
+Processes::Processes(string pname, int plev, string ptype= "integer",int fadr=0,int ladr=0)
 {
 	this->pname = pname;
 	this->plev = plev;
 	this->ptype = ptype;
+	this->ladr = fadr;
+	this->ladr = ladr;
 }
 
 //写过程名表文件
@@ -198,7 +200,7 @@ bool Processes::IfInTheTable()
 
 //Error的函数
 
-Error::Error(string ErrorDiscription, string ErrorType, int ErrorLine)
+Error::Error(int ErrorLine, string ErrorType, string ErrorDiscription=" ")
 {
 	this->ErrorDisCription = ErrorDiscription;
 	this->ErrorType = ErrorType;
@@ -223,7 +225,7 @@ void Error::WriteFile()
 
 
 //出错处理
-void ErrorHandling(string ErrorDiscription, int ErrorCode)
+void ErrorHandling(string ErrorDiscription, string ErrorCode)
 {
 
 	
@@ -252,13 +254,22 @@ void  SubProgram()
 			if ((*pointer).code == END)
 				Advance();
 			else
-				ErrorHandling("end", LACK_OF);
+			{
+				Error new_error(line, LACK_OF,"end");
+				errors.push_back(new_error);
+			}
 		}
 		else
-			ErrorHandling(";", LACK_OF);
+		{
+			Error new_error(line, LACK_OF,";");
+			errors.push_back(new_error);
+		}
 	}
 	else 
-		ErrorHandling("begin", LACK_OF);
+	{
+		Error new_error(line, LACK_OF,"begin");
+		errors.push_back(new_error);
+	}
 }
 
 //说明语句表
@@ -269,17 +280,25 @@ void  StatementList()
 }
 
 //说明语句表'
-void  StatementListA()
+void  StatementListA()//此处需添加缺少；错
 {
 	auto next_pointer = pointer + 1;
 	if ((*next_pointer).code == EOLN) next_pointer++;
+	
 	if ((*pointer).code == 23 && (*next_pointer).code == INTEGER)
 	{
 		Advance();
 		ExplanatoryStatement();
 		StatementListA();
 	}
-	
+	else if ((*pointer).code ==INTEGER)
+	{
+		Error new_error(line-1, LACK_OF, ";");
+		errors.push_back(new_error);
+		ExplanatoryStatement();
+		StatementListA();
+	}
+
 }
 
 //执行语句表
@@ -292,18 +311,29 @@ void  ExecutionStatementList()
 //执行语句表'
 void  ExecutionStatementListA()  
 {
+	auto next_pointer = pointer + 1;
+	if ((*next_pointer).code == EOLN) next_pointer++;
 	if ((*pointer).code == 23)
 	{
 		Advance();
 		ExecuteStatement();
 		ExecutionStatementListA();
 	}
-	
+	else if ((*pointer).code != END && (*next_pointer).code != END && (*pointer).code != 23)  //未匹配到； 且下方还有执行语句
+	{
+		Error new_error(line-1, LACK_OF, ";");
+		errors.push_back(new_error);
+		ExecuteStatement();
+		ExecutionStatementListA();
+	}
+	else
+		return;
 }
 
 //说明语句
 void  ExplanatoryStatement()
-{	auto next_pointer = pointer + 1;   //可能存在问题
+{	
+	auto next_pointer = pointer + 1;   //可能存在问题
 	if ((*next_pointer).code == FUNCTION)
 		FunctionDescription();
 	else
@@ -319,7 +349,10 @@ void  VariableDescription()
 		Variable();
 	}
 	else
-		ErrorHandling("integer", LACK_OF);
+	{
+		Error new_error(line, LACK_OF, "integer");
+		errors.push_back(new_error);
+	}
 }
 
 //函数说明
@@ -350,19 +383,34 @@ void  FunctionDescription()
 						FunctionBody();
 					}
 					else
-						ErrorHandling(";", LACK_OF);
+					{
+						Error new_error(line, LACK_OF,";");
+						errors.push_back(new_error);
+					}
 				}
 				else
-					ErrorHandling(")", LACK_OF);
+				{
+					Error new_error(line, LACK_OF,")");
+					errors.push_back(new_error);
+				}
 			}
 			else
-			ErrorHandling("(", LACK_OF);
+			{
+				Error new_error(line, LACK_OF,"(");
+				errors.push_back(new_error);
+			}
 		}
 		else
-			ErrorHandling("function", LACK_OF);
+		{
+			Error new_error(line, LACK_OF,"function");
+			errors.push_back(new_error);
+		}
 	}
 	else
-		ErrorHandling("integer", LACK_OF);
+	{
+		Error new_error(line, LACK_OF,"integer");
+		errors.push_back(new_error);
+	}
 	nowprocess = TempToStoreLastProcess;
 	nowlevel--;
 }
@@ -383,8 +431,10 @@ void  Variable()  //变量重定义在此处判断
 			}
 
 			else //重定义
-				//出错处理-变量重定义
-				cout << "Variable " << (*pointer).statement << " Defined Several Times" << endl;
+			{
+				Error new_error(line, VARIABLE_ALREADY_DEFINED);
+				errors.push_back(new_error);
+			}
 		}
 		else
 		{
@@ -394,9 +444,10 @@ void  Variable()  //变量重定义在此处判断
 				location++;
 			}
 			else if (new_variable.IfNotDefined())
-				//出错处理-变量未定义
-					//cout << "Variable " << (*pointer).statement << " Not Defined" << endl;
-				cout << "pointer is " << (*pointer).statement << " in line " << line << endl;
+			{
+				Error new_error(line, VARIABLE_NOT_DEFINED);
+				errors.push_back(new_error);
+			 }
 		}
 	}
 	Identifier();
@@ -456,13 +507,22 @@ void  FunctionBody()
 			if ((*pointer).code == END)
 				Advance();
 			else 
-				ErrorHandling("end", LACK_OF);
+			{
+				Error new_error(line, LACK_OF,"end");
+				errors.push_back(new_error);
+			}
 		}
 		else
-			ErrorHandling(";", LACK_OF);
+		{
+			Error new_error(line, LACK_OF,";");
+			errors.push_back(new_error);
+		}
 	}
 	else
-		ErrorHandling("begin", LACK_OF);
+	{
+		Error new_error(line, LACK_OF,"begin");
+		errors.push_back(new_error);
+	}
 	
 }
 
@@ -475,7 +535,7 @@ void  ExecuteStatement()
 		WriteSentence();
 	else if ((*pointer).code == IF)
 		ConditionalStatement();
-	else
+	else if((*pointer).code==IDENTIFIER)
 		AssignmentStatement();
 }
 
@@ -499,14 +559,23 @@ void  ReadSentence()
 			if ((*pointer).code == 22)
 				Advance();
 			else
-				ErrorHandling(")", LACK_OF);
+			{
+				Error new_error(line, LACK_OF,")");
+				errors.push_back(new_error);
+			}
 			nowprocess = TempToStoreLastProcess;
 		}
 		else
-			ErrorHandling("(", LACK_OF);
+		{
+			Error new_error(line, LACK_OF,"(");
+			errors.push_back(new_error);
+		}
 	}
 	else
-		ErrorHandling("read", LACK_OF);
+	{
+		Error new_error(line, LACK_OF,"read");
+		errors.push_back(new_error);
+	}
 }
 
 //写语句
@@ -529,14 +598,23 @@ void  WriteSentence()
 			if ((*pointer).code == 22)
 				Advance();
 			else
-				ErrorHandling(")", LACK_OF);
+			{
+				Error new_error(line, LACK_OF,")");
+				errors.push_back(new_error);
+			}
 			nowprocess = TempToStoreLastProcess;
 		}
 		else
-			ErrorHandling("(", LACK_OF);
+		{
+			Error new_error(line, LACK_OF,"(");
+			errors.push_back(new_error);
+		}
 	}
 	else
-		ErrorHandling("write", LACK_OF);
+	{
+		Error new_error(line, LACK_OF,"write");
+		errors.push_back(new_error);
+	}
 }
 
 //赋值语句
@@ -549,7 +627,10 @@ void  AssignmentStatement()
 		ArithmeticExpression();
 	}
 	else
-		ErrorHandling(":=", LACK_OF);
+	{
+		Error new_error(line, LACK_OF, ":=");
+		errors.push_back(new_error);
+	}
 }
 
 //条件语句
@@ -569,13 +650,22 @@ void  ConditionalStatement()
 				ExecuteStatement();
 			}
 			else
-				ErrorHandling("else", LACK_OF);
+			{
+				Error new_error(line, LACK_OF, "else");
+				errors.push_back(new_error);
+			}
 		}
 		else
-			ErrorHandling("then", LACK_OF);
+		{
+			Error new_error(line, LACK_OF, "then");
+			errors.push_back(new_error);
+		}
 	}
 	else
-		ErrorHandling("if", LACK_OF);
+	{
+		Error new_error(line, LACK_OF, "if");
+		errors.push_back(new_error);
+	}
 }
 
 //算术表达式
@@ -613,6 +703,15 @@ void  ItemA()
 		Factor();
 		ItemA();
 	}
+	/*
+	else if ((*pointer).code == IDENTIFIER)
+	{
+		Error new_error(line - 1, LACK_OF, "*");
+		errors.push_back(new_error);
+		Factor();
+		ItemA();
+	}
+	*/
 	else
 		return;
 }
@@ -623,7 +722,7 @@ void  Factor()
 	auto next_pointer = pointer + 1;
 	if ((*pointer).code == CONSTANT)
 		Constant();
-	else if ((*next_pointer).code==21)
+	else if ((*next_pointer).code==21)  //对应函数调用
 		FunctionCall();
 	else
 		Variable();
@@ -650,12 +749,18 @@ void  FunctionCall()
 		if ((*pointer).code == 22)
 			Advance();
 		else
-			ErrorHandling(")", LACK_OF);
+		{
+			Error new_error(line, LACK_OF,")");
+			errors.push_back(new_error);
+		}
 		ifparameter = false;
 		nowprocess = TempToStoreLastProcess;
 	}
 	else
-		ErrorHandling("(", LACK_OF);
+	{
+		Error new_error(line, LACK_OF, ")");
+		errors.push_back(new_error);
+	}
 }
 
 /*
@@ -697,7 +802,7 @@ void  RelationalOperator()
 	 break;
 	default:
 		//出错处理-关系运算符错误
-		cout << "Error" << endl;
+		Error new_error(line, RELATION_TYPE_ERROR);
 	}
 }
 
