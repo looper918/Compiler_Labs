@@ -1,7 +1,0 @@
-vname           vproc           vkind           vlev            vtype           vadr            
-k               main            0               0               integer         0               
-n               f               1               1               integer         1               
-n               f               0               1               integer         2               
-m               read            1               0               integer         3               
-m               f               1               0               integer         4               
-k               write           1               0               integer         5               

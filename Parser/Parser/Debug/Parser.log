@@ -1,8 +1,0 @@
-﻿  Parser.cpp
-c:\users\ye\desktop\编译原理实验\parser\parser\parser.h(22): warning C4005: “EOF”: 宏重定义
-  d:\windows kits\10\include\10.0.17763.0\ucrt\stdio.h(37): note: 参见“EOF”的前一个定义
-  源.cpp
-c:\users\ye\desktop\编译原理实验\parser\parser\parser.h(22): warning C4005: “EOF”: 宏重定义
-  d:\windows kits\10\include\10.0.17763.0\ucrt\stdio.h(37): note: 参见“EOF”的前一个定义
-  正在生成代码...
-  Parser.vcxproj -> C:\Users\YE\Desktop\编译原理实验\Parser\Debug\Parser.exe
