@@ -65,9 +65,7 @@
                ) 22
                ; 23
             EOLN 24
-           write 09
-               ( 21
-               k 10
+          writek 09
                ) 22
             EOLN 24
              end 02

@@ -89,14 +89,14 @@ void FileStore(string temp, string code,int num=1)
 	{
 		If_Error = false;
 		//system("pause");
-		return;   //文件打开失败
+		return;   
 	};
 	temp.resize(num);
 	while (temp.size() < 16)
 		temp = " " + temp;
 	ofstream File_out;
 	File_out.open(File_Output, ios_base::out | ios_base::app);//追加写
-	cout << temp << " " << code << endl;
+	//cout << temp << " " << code << endl;
 	File_out <<temp << " " << code << endl;
 	File_out.close();
 }
@@ -143,8 +143,16 @@ char Buffer[20];
 				next_pointer++;
 			}
 			Buffer[i++] = *now_pointer;
-			if (i > 16) ErrorHandling(2);
-
+			if (i > 16)
+			{
+				If_Error = true;
+				ErrorHandling(2);
+			}
+			else if (IsInvalid(*now_pointer))
+			{
+				If_Error = true;
+				ErrorHandling(0);
+			}
 			if (IfCharacterEqual(Buffer, "begin", 4)) FileStore(Buffer, "01",i);
 			else if (IfCharacterEqual(Buffer, "end", 2)) FileStore(Buffer, "02",i);
 			else if (IfCharacterEqual(Buffer, "integer", 6)) FileStore(Buffer, "03",i);
